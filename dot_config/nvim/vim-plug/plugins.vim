@@ -12,8 +12,8 @@ call plug#begin('~/.config/nvim/autoload/plugged')
     " coc go language server
     Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
-    " Keeping up to date with master
-    Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+    " Use release branch (recommend)
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
     " nice looking
     Plug 'gruvbox-community/gruvbox'

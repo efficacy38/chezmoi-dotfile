@@ -91,4 +91,4 @@ source $HOME/.config/nvim/plug-config/coc.vim
 
 set background=dark
 colorscheme gruvbox
-let g:coc_node_path = '/home/efficacy38/.nvm/versions/node/v18.12.1/bin/node'
+" let g:coc_node_path = '/home/efficacy38/.nvm/versions/node/v18.12.1/bin/node'
