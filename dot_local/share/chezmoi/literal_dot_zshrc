@@ -142,4 +142,3 @@ alias date="env LANG=enUS.UTF-8 date"
 autoload bashcompinit && bashcompinit
 autoload -Uz compinit && compinit
 complete -C '/usr/local/bin/aws_completer' aws
-alias godev='lxc exec dev -- su - efficacy38'

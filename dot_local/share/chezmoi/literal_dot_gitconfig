@@ -1,0 +1,12 @@
+[user]
+	email = efficacy38@gmail.com
+	name = jerry
+	signingkey = EFDFADD400E10DCE
+[credential]
+	helper = cache
+[credential "https://github.com"]
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = !gh auth git-credential
+[commit]
+	gpgsign = true
