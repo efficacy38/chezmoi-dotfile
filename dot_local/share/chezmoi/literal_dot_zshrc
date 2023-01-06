@@ -143,4 +143,5 @@ autoload bashcompinit && bashcompinit
 autoload -Uz compinit && compinit
 complete -C '/usr/local/bin/aws_completer' aws
 alias godev='lxc exec dev -- su - efficacy38'
+export EDITOR=vim 
 
