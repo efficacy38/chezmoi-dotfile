@@ -142,5 +142,19 @@ alias date="env LANG=enUS.UTF-8 date"
 autoload bashcompinit && bashcompinit
 autoload -Uz compinit && compinit
 complete -C '/usr/local/bin/aws_completer' aws
-alias godev='lxc exec dev -- sudo -iu efficacy38'
+alias god='lxc exec dev -- sudo -iu efficacy38'
+alias godvm='lxc exec dev-vm -- sudo -iu efficacy38'
 export EDITOR=vim 
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# tm - create new tmux session, or switch to existing one. Works from within tmux too. (@bag-man)
+# `tm` will allow you to select your tmux session via fzf.
+# `tm irc` will attach to the irc session (if it exists), else it will create it.
+
+tm() {
+  [[ -n "$TMUX" ]] && change="switch-client" || change="attach-session"
+  if [ $1 ]; then
+	tmux $change -t "$1" 2>/dev/null || (tmux new-session -d -s $1 && tmux $change -t "$1"); return
+  fi
+  session=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf --exit-0) &&  tmux $change -t "$session" || echo "No sessions found."
+}
