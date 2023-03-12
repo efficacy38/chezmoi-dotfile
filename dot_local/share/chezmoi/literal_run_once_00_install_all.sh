@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ex
-sudo add-apt-repository ppa:neovim-ppa/stable
+sudo add-apt-repository -y ppa:neovim-ppa/stable
 sudo apt-get update
 sudo apt-get -y install tmux git neovim zsh curl wget
 
