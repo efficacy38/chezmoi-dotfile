@@ -5,7 +5,8 @@ sudo apt -y install tmux git neovim zsh curl wget
 # install nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 # reload the nvm
-source ~/.bashrc
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
 # install vim plug
 sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
@@ -18,5 +19,5 @@ curl https://pyenv.run | bash
 curl -sSL https://install.python-poetry.org | python3 -
 
 # check poetry installation
-source ~/.bashrc
+export PATH=$PATH:$HOME/.local/bin
 poetry --version
