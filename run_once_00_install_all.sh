@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ex
-sudo apt -y install tmux git neovim zsh curl wget
+sudo add-apt-repository ppa:neovim-ppa/stable
+sudo apt-get update
+sudo apt-get -y install tmux git neovim zsh curl wget
 
 # install nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
