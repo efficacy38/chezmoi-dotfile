@@ -18,6 +18,6 @@ yarn install
 popd
 
 # install nvim plugins
-nvim -c "CocInstall coc-yaml coc-pyright coc-clangd" -c "q" -c "q"
+nvim -c "CocInstall coc-yaml coc-pyright coc-clangd coc-html" -c "q" -c "q"
 
 
