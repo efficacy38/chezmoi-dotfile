@@ -18,4 +18,5 @@ curl https://pyenv.run | bash
 curl -sSL https://install.python-poetry.org | python3 -
 
 # check poetry installation
+source ~/.bashrc
 poetry --version
