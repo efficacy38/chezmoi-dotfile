@@ -54,6 +54,8 @@ func! Execute_program()
         exec "MarkdownPreview"
     elseif &filetype=='go'
         exec  "w" | exec "!gofmt -w % && go run %"
+    elseif &filetype=='javascript'
+        exec  "w" | exec "!node %"
     endif
 endfunc
 

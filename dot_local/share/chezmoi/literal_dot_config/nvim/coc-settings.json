@@ -1,8 +1,11 @@
 {
   "diagnostic.checkCurrentLine": true,
-  "clangd.path": "~/.config/coc/extensions/coc-clangd-data/install/14.0.3/clangd_14.0.3/bin/clangd",
+  "clangd.path": "~/.config/coc/extensions/coc-clangd-data/install/15.0.6/clangd_15.0.6/bin/clangd",
   "python.formatting.provider": "autopep8",
   "python.formatting.autopep8Path": "/home/efficacy38/anaconda3/bin/autopep8",
+    "yaml.schemas": {
+      "kubernetes": "/*.yaml"
+  },
   "languageserver": {
     "golang": {
       "command": "gopls",
