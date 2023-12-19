@@ -1,0 +1,6 @@
+Include ~/.ssh/config.d/*.conf
+
+Match all
+	AddKeysToAgent yes
+	VerifyHostKeyDNS yes
+	# StrictHostKeyChecking yes

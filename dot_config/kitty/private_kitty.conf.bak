@@ -1,0 +1,10 @@
+# vim:fileencoding=utf-8:ft=conf
+
+font_family      Hack
+italic_font      auto
+bold_font        auto
+bold_italic_font auto
+
+# Font size (in pts)
+font_size        16.0
+

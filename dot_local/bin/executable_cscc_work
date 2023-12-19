@@ -1,0 +1,131 @@
+#!/bin/bash
+
+# exit if encounter any error
+set -e
+
+CONFDIR="~/.config/cscc/"
+CONF="$CONFDIR/config.json"
+
+# prompt help
+prompt_help(){
+    echo "Usage: cscc_work [OPTION]"
+    echo "Toggle VPN connection for CSCC work"
+    echo "  -t, --toggle_vpn    toggle VPN connection"
+    echo "  -p, --production    toggle VPN connection for production"
+    echo "  -s, --status        print VPN status"
+    echo "  -h, --help          print this help"
+}
+
+get_vpn_status(){
+    silent=0
+
+    OPTIND=0
+    while getopts ":s" op; do
+        case "$op" in
+            s)
+                silent=1
+                ;;
+            *)
+                echo "Invalid option: -${OPTARG}" >&2
+                exit 1
+                ;;
+        esac
+    done
+    shift $(($OPTIND-1))
+
+    if systemctl is-active --quiet "openfortivpn@cscc_$1.service"; then
+        [ "$silent" -eq 0 ] && printf 'connected(%s)' "$(get_vpn_ip)"
+        return 0
+    else
+        [ "$silent" -eq 0 ] && echo "disconnected"
+        return 1
+    fi
+}
+
+get_vpn_ip(){
+    ip addr show ppp0 | grep -Po 'inet \K[\d.]+'
+}
+
+status(){
+    # print status of vpn status
+    printf "Test VPN status: %s\n" "$(get_vpn_status test)"
+    printf "Prod VPN status: %s\n" "$(get_vpn_status prod)"
+}
+
+stop_all_vpn(){
+    # ask whether disconnect vpn
+    if get_vpn_status -s test || get_vpn_status -s prod; then
+        printf "VPN service is running, do you want to disconnect? (Y/n) "
+        read -r answer
+        if [ "$answer" != "${answer#[Nn]}" ]; then
+            echo "VPN service not stopped, exiting..."
+            return 1
+        fi
+
+        get_vpn_status -s test && systemctl stop openfortivpn@cscc_test.service && \
+            echo "test vpn is $(systemctl is-active openfortivpn@cscc_test.service)" 
+
+        get_vpn_status -s prod && systemctl stop openfortivpn@cscc_prod.service && \
+            echo "prod vpn is $(systemctl is-active openfortivpn@cscc_prod.service)" 
+    fi
+}
+
+start_vpn(){
+    # $1 is the vpn type, test or prod
+    printf "%s VPN service is not running, do you want to start it? (Y/n)" "$1"
+    read -r answer
+    if [ "$answer" != "${answer#[Nn]}" ]; then
+        echo "VPN service not started, exiting..."
+        exit 1
+    fi
+
+    # start vpn service
+    if [ "$1" == "production" ]; then
+        systemctl start openfortivpn@cscc_prod.service
+        echo "prod vpn is $(get_vpn_status prod)"
+        # set dns of ppp0
+        resolvectl dns ppp0 10.1.1.1 10.1.1.2
+        resolvectl domain ppp0 cs.nctu.edu.tw test.cs.nctu.edu.tw 
+    else
+        systemctl start openfortivpn@cscc_test.service
+        echo "test vpn is $(get_vpn_status test)"
+        resolvectl dns ppp0 10.2.1.1 10.2.1.2 
+        resolvectl domain ppp0 cs.nctu.edu.tw test.cs.nctu.edu.tw 
+    fi
+}
+
+toggle_vpn(){
+    # check vpn service is running, if not ask to start it
+    if get_vpn_status -s test || get_vpn_status -s prod; then
+        stop_all_vpn
+    else
+        start_vpn "$1"
+    fi
+}
+
+case "$1" in
+    -t|--toggle_vpn)
+        toggle_vpn "test"
+      ;;
+    -p|--production)
+        stop_all_vpn || true
+        start_vpn "production"
+      ;;
+    -s|--status)
+        status | boxes -p "h2v1"
+        echo 
+      ;;
+    -h|--help)
+        prompt_help
+      ;;
+    *)
+      # if no arguments are given, print status, else prompt help
+      if [ $# -eq 0 ]; then
+          status
+          toggle_vpn "test"
+      else
+        prompt_help
+        exit 1
+      fi
+      ;;
+esac

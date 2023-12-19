@@ -1,0 +1,100 @@
+{{- define "getGithubHeadRevision" -}}
+{{-   $repo := get . "repo" -}}
+{{-   $cache := get . "cache" -}}
+{{-   if hasKey $cache $repo -}}
+{{-     get $cache $repo -}}
+{{-   else -}}
+{{-     $result := output "git" "ls-remote" (printf "https://github.com/%s.git" $repo) "HEAD" | trimSuffix "HEAD\n" | trim -}}
+{{-     $_ := set $cache $repo $result -}}
+{{-     $result -}}
+{{-   end -}}
+{{- end -}}
+
+{{- define "getGithubLatestVersion" -}}
+{{-   $repo := get . "repo" -}}
+{{-   $cache := get . "cache" -}}
+{{-   if hasKey $cache $repo -}}
+{{-     get $cache $repo -}}
+{{-   else -}}
+{{-     $result := output "curl" "-fsSL" "-o" "/dev/null" "-w" "%{url_effective}" (printf "https://github.com/%s/releases/latest" $repo) | trim | base | trimPrefix "v" -}}
+{{-     $_ := set $cache $repo $result -}}
+{{-     $result -}}
+{{-   end -}}
+{{- end -}}
+
+{{- /* Reads the revisions and versions from a cache file, and use them if they are newer than 10 minutes */ -}}
+{{- $cacheDir := joinPath .chezmoi.homeDir ".cache/chezmoi/external" -}}
+{{- $cacheFile := joinPath $cacheDir "versions_and_revisions.yaml" -}}
+{{- $currentTime := now | unixEpoch -}}
+{{- $saveCache := true -}}
+{{- $githubHeadRevisions := dict -}}
+{{- $githubLatestVersions := dict -}}
+{{- if stat $cacheFile -}}
+{{-   $cacheContents := include $cacheFile | fromYaml -}}
+{{-   $cacheTime := get $cacheContents "time" -}}
+{{-   $timeDiff := sub $currentTime $cacheTime -}}
+{{-   $refreshExternals := or (has "--refresh-externals" .chezmoi.args) (has "--refresh-externals=true" .chezmoi.args) (has "-R" .chezmoi.args) -}}
+{{-   if or $refreshExternals (lt $timeDiff 600) -}}
+{{-     $githubHeadRevisions = get $cacheContents "revisions" -}}
+{{-     $githubLatestVersions = get $cacheContents "versions" -}}
+{{-     $saveCache = false -}}
+{{-   end -}}
+{{- end -}}
+
+# oh my zsh
+".oh-my-zsh":
+  type: archive
+  url: "https://github.com/ohmyzsh/ohmyzsh/archive/{{ template "getGithubHeadRevision" dict "repo" "ohmyzsh/ohmyzsh" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  # waiting for https://github.com/twpayne/chezmoi/issues/1614#issuecomment-966524408
+  # exact: true
+
+".oh-my-zsh/custom/themes/powerlevel10k":
+  type: archive
+  url: "https://github.com/romkatv/powerlevel10k/archive/{{ template "getGithubHeadRevision" dict "repo" "romkatv/powerlevel10k" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  exact: true
+
+".oh-my-zsh/custom/plugins/zsh-syntax-highlighting":
+  type: archive
+  url: "https://github.com/zsh-users/zsh-syntax-highlighting/archive/{{ template "getGithubHeadRevision" dict "repo" "zsh-users/zsh-syntax-highlighting" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  exact: true
+
+".oh-my-zsh/custom/plugins/zsh-autosuggestions":
+  type: archive
+  url: "https://github.com/zsh-users/zsh-autosuggestions/archive/{{ template "getGithubHeadRevision" dict "repo" "zsh-users/zsh-autosuggestions" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  exact: true
+
+".oh-my-zsh/custom/plugins/zsh-completions":
+  type: archive
+  url: "https://github.com/zsh-users/zsh-completions/archive/{{ template "getGithubHeadRevision" dict "repo" "zsh-users/zsh-completions" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  exact: true
+
+".oh-my-zsh/custom/plugins/lxd-completion-zsh":
+  type: archive
+  url: "https://github.com/endaaman/lxd-completion-zsh/archive/{{ template "getGithubHeadRevision" dict "repo" "endaaman/lxd-completion-zsh" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  exact: true
+
+"~/.tmux/plugins/tpm":
+  type: archive
+  url: "https://github.com/tmux-plugins/tpm/archive/{{ template "getGithubHeadRevision" dict "repo" "tmux-plugins/tpm" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  exact: true
+
+# nvim
+".config/nvim":
+  type: archive
+  url: "https://github.com/AstroNvim/AstroNvim/archive/{{ template "getGithubHeadRevision" dict "repo" "AstroNvim/AstroNvim" "cache" $githubHeadRevisions }}.tar.gz"
+  stripComponents: 1
+  exact: true
+
+# local binary tools
+".local/bin/bob":
+  type: archive-file
+  url: "https://github.com/MordechaiHadad/bob/releases/download/v{{ template "getGithubLatestVersion" dict "repo" "MordechaiHadad/bob" "cache" $githubHeadRevisions }}/bob-linux-x86_64-openssl.zip"
+  path: bob-linux-x86_64-openssl/bob
+  executable: true

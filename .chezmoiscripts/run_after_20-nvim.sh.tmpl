@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# {{ include (joinPath .chezmoi.sourceDir ".chezmoitemplates/scripts-library") }}
+
+# The following line is for ShellCheck to correctly identify the above included library
+true || source ../.chezmoitemplates/scripts-library
+
+NVIM_VERSION=0.9.4
+if ! command -v bob >/dev/null; then
+  log_error "bob is not installed"
+else
+  # install nvim with bob
+  need_install=false
+  if ! command -v nvim >/dev/null; then
+    need_install=true
+  fi
+  # check nvim version is correct
+  if [[ "$(nvim --version)" =~ NVIM\ v([0-9].[0-9].[0-9]) ]]; then
+    current_version="${BASH_REMATCH[1]}"
+    if [[ "${current_version}" != "${NVIM_VERSION}" ]]; then
+      log_task "current version(${current_version}) is not equal to expected version(${NVIM_VERSION})"
+    fi
+  fi
+
+  if [[ "${need_install}" == true ]]; then
+    log_task "Installing nvim with bob"
+    bob install "${NVIM_VERSION}"
+    bob use "${NVIM_VERSION}"
+  else
+    log_task "current version is expected version(${NVIM_VERSION})"
+  fi
+fi
+
+# install nvim user config
+ln -s ~/.config/nvim-user ~/.config/nvim/lua/user
+

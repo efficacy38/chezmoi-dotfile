@@ -1,0 +1,73 @@
+#!/bin/bash
+set -eu -o pipefail
+
+# remote server(LXD)
+SERVER='homelab-1.jerry.hs'
+
+# show iso at remote server, this accept one argument which is the id of the iso,
+# if no argument is given, it will show all the iso at remote server
+# otherwise, it will show the iso with the given id
+function get_specified_iso() {
+		cnt=1
+		ssh efficacy38@$SERVER ls /home/efficacy38/Nextcloud/Isos | while read line; do
+			if [ $# -eq 0 ]; then
+				echo -e "$cnt $line"
+				cnt=$((cnt+1))
+			else
+				if [ "$1" -eq "$cnt" ]; then
+					echo -e "$cnt $line"
+					break
+				fi
+				cnt=$((cnt+1))
+			fi
+
+		done
+}
+
+function show_iso() {
+	# get the iso at remote server
+	echo -e "id name"
+	get_specified_iso "$@" | while read line; do
+		# get the id and name of the iso
+		id=$(echo $line | awk '{print $1}')
+		name=$(echo $line | awk '{print $2}')
+		# show the iso
+		echo -e "$id $name"
+	done
+}
+
+# ask the name of the vm
+read -p "Enter the name of the vm: " vm_name
+
+# show iso at remote server
+echo -e "iso at remote server"
+show_iso "$@" | column -t
+
+# ask the id of the iso
+read -p "Enter the id of the iso: " iso_id
+
+# init lxd virtual machine
+lxc init --empty -p default --vm -c limits.cpu=4 -c limits.memory=4GiB\
+	-c security.secureboot=false -c raw.qemu="-cpu host"\
+	-c raw.qemu.conf='[device "dev-qemu_rng"]' -p medium "$vm_name"
+lxc config device add "$vm_name" iso disk source=/home/efficacy38/Nextcloud/Isos/\
+$(get_specified_iso "$iso_id" | awk '{print $2}') boot.priority=10
+
+# ask for add more disk many times, until user enter 'n'
+while true; do
+	read -p "Do you want to add more disk? (Y/n): " add_more_disk
+	grep -qE "^[Yy]$|^$" <<< "$add_more_disk" || break
+	read -p "Enter the size of the disk. (default is 10GiB): " disk_size
+	disk_size=${disk_size:-10}
+	volume_name="$vm_name-disk$(lxc config device list "$vm_name" | wc -l)"
+	lxc storage volume create default "$volume_name" size="${disk_size}GiB" --type block
+	lxc config device add "$vm_name" disk$(lxc config device list "$vm_name" | wc -l) disk pool=default source="$volume_name"
+done
+
+lxc start "$vm_name" --console=vga
+
+# teardown the install media
+read -p "Do you want to shutdown your vm? (Y/n): " shutdown_vm
+grep -qE "^[Yy]$|^$" <<< "$shutdown_vm" && lxc stop "$vm_name" -f
+read -p "Do you want to remove the install media? (Y/n): " remove_iso
+grep -qE "^[Yy]$|^$" <<< "$remove_iso" && lxc config device remove "$vm_name" iso

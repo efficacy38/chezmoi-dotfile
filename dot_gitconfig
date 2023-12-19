@@ -1,0 +1,24 @@
+[user]
+	email = efficacy38@gmail.com
+	name = efficacy38
+	signingkey = C0A7545BA206F0D4C585FAF2F2D195F14E1F7CD8
+[credential]
+	helper = cache
+[credential "https://github.com"]
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = !gh auth git-credential
+[credential "https://gitlab.cs.nctu.edu.tw"]
+	helper = !glab auth git-credential
+[credential "https://git.cs.nctu.edu.tw"]
+	helper = !glab auth git-credential
+[commit]
+    gpgsign = true
+[safe]
+	directory = /usr/local/src/wallpaper-engine-kde-plugin
+	directory = /home/efficacy38/Tmp/sshfs
+[alias]
+	logline = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	gs = status
+	aa = add -A
+	gcs = commit -S -m
