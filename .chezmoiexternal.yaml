@@ -79,7 +79,7 @@
   stripComponents: 1
   exact: true
 
-"~/.tmux/plugins/tpm":
+".tmux/plugins/tpm":
   type: archive
   url: "https://github.com/tmux-plugins/tpm/archive/{{ template "getGithubHeadRevision" dict "repo" "tmux-plugins/tpm" "cache" $githubHeadRevisions }}.tar.gz"
   stripComponents: 1
