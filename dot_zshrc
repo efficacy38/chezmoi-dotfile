@@ -277,7 +277,7 @@ aliasIfExist godev 'lxc exec --project default dev -- sudo -iu '
 aliasIfExist bye 'sudo poweroff'
 aliasIfExist k kubectl
 aliasIfExist reboot 'sudo reboot'
-alias cscc_work='sudo /home//.local/bin/cscc_work'
+alias cscc_work='sudo $HOME/.local/bin/cscc_work'
 aliasIfExist 'cdt' 'cd ~/Tmp'
 alias chproj='lxc project switch'
 aliasIfExist ssh "kitty +kitten ssh"
