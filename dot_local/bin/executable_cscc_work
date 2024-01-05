@@ -3,8 +3,20 @@
 # exit if encounter any error
 set -e
 
+# CONSTANTS(names)
+TEST_MODE="test"
+PRODUCTION_MODE="prod"
+ERROR=1
+WARN=2
+INFO=3
+DEBUG=4
+
+# config variables
+LOG_LEVEL=${LOG_LEVEL:-$INFO}
 CONFDIR="~/.config/cscc/"
 CONF="$CONFDIR/config.json"
+TIMEINTERVAL=0.1 # 100ms
+TIMEOUT=100      # 10s
 
 # prompt help
 prompt_help(){
@@ -16,6 +28,42 @@ prompt_help(){
     echo "  -h, --help          print this help"
 }
 
+log(){
+    local log_level_int=$1
+    local log_level_str=$2
+    local message=${@:3}
+
+    local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+
+    local log_message="[$timestamp] [$log_level_str] - $message"
+    echo "$log_message"
+
+    # if [[ $log_level_int -le $LOG_LEVEL ]]; then
+    #     echo "$log_message"
+    # fi    
+}
+
+function error() {
+    log $ERROR "ERROR" "$*"
+}
+
+function warn() {
+    log $WARN "WARN" "$*"
+}
+
+function info() {
+    log $INFO "INFO" "$*"
+}
+
+function debug() {
+    local message=$1
+    log $DEBUG "DEBUG" "$message"
+}
+
+if [[ $LOG_LEVEL -lt $ERROR ]]; then
+    LOG_LEVEL=$INFO
+fi
+
 get_vpn_status(){
     silent=0
 
@@ -26,12 +74,12 @@ get_vpn_status(){
                 silent=1
                 ;;
             *)
-                echo "Invalid option: -${OPTARG}" >&2
+                error "Invalid option: -${OPTARG}"
                 exit 1
                 ;;
         esac
     done
-    shift $(($OPTIND-1))
+    shift $((OPTIND-1))
 
     if systemctl is-active --quiet "openfortivpn@cscc_$1.service"; then
         [ "$silent" -eq 0 ] && printf 'connected(%s)' "$(get_vpn_ip)"
@@ -42,61 +90,86 @@ get_vpn_status(){
     fi
 }
 
-get_vpn_ip(){
+get_vpn_ip_raw(){
     ip addr show ppp0 | grep -Po 'inet \K[\d.]+'
+}
+
+get_vpn_ip(){
+    while [ "$TIMEOUT" -gt 0 ]; do
+        if [ -n "$(get_vpn_ip_raw)" ]; then
+            get_vpn_ip_raw
+            return 0
+        fi
+        sleep "$TIMEINTERVAL"
+        TIMEOUT=$((TIMEOUT-1))
+    done
+
+    error "Get VPN IP timeout, exiting..."
+    return 1
 }
 
 status(){
     # print status of vpn status
-    printf "Test VPN status: %s\n" "$(get_vpn_status test)"
-    printf "Prod VPN status: %s\n" "$(get_vpn_status prod)"
+    printf "%s VPN status: %s\n" "$TEST_MODE" "$(get_vpn_status "$TEST_MODE")"
+    printf "%s VPN status: %s\n" "$PRODUCTION_MODE" "$(get_vpn_status "$PRODUCTION_MODE")"
 }
 
 stop_all_vpn(){
+    vpn_string=""
+    get_vpn_status -s "$TEST_MODE" && vpn_string="$TEST_MODE"
+    get_vpn_status -s "$PRODUCTION_MODE" && vpn_string="$PRODUCTION_MODE"
     # ask whether disconnect vpn
-    if get_vpn_status -s test || get_vpn_status -s prod; then
-        printf "VPN service is running, do you want to disconnect? (Y/n) "
+    if [ -n "$vpn_string" ]; then
+        printf "\n%s VPN(%s) service is running, do you want to disconnect? (Y/n) " \
+        "$vpn_string" "$(get_vpn_ip)"
         read -r answer
         if [ "$answer" != "${answer#[Nn]}" ]; then
-            echo "VPN service not stopped, exiting..."
+            info "VPN service not stopped, exiting..."
             return 1
         fi
 
-        get_vpn_status -s test && systemctl stop openfortivpn@cscc_test.service && \
-            echo "test vpn is $(systemctl is-active openfortivpn@cscc_test.service)" 
+        # stop vpn service
+        systemctl stop "openfortivpn@cscc_$vpn_string.service"
 
-        get_vpn_status -s prod && systemctl stop openfortivpn@cscc_prod.service && \
-            echo "prod vpn is $(systemctl is-active openfortivpn@cscc_prod.service)" 
+        # check current vpn status
+        info "$vpn_string vpn is $(systemctl is-active openfortivpn@cscc_$TEST_MODE.service)" 
     fi
 }
 
 start_vpn(){
     # $1 is the vpn type, test or prod
-    printf "%s VPN service is not running, do you want to start it? (Y/n)" "$1"
+    vpn_string=""
+    get_vpn_status -s $TEST_MODE && vpn_string="$TEST_MODE"
+    get_vpn_status -s $PRODUCTION_MODE && vpn_string="$PRODUCTION_MODE"
+
+    if [ "$vpn_string" = "$1" ]; then
+        info "VPN($vpn_string) service is running, exiting..." && exit 0
+    elif ! stop_all_vpn; then
+        error "VPN stop failed, exiting..." && exit 1
+    fi
+
+    printf "\n%s VPN service is not running, do you want to start it? (Y/n)" "$1"
     read -r answer
     if [ "$answer" != "${answer#[Nn]}" ]; then
-        echo "VPN service not started, exiting..."
-        exit 1
+        info "VPN service would not start, exiting..." && exit 0
     fi
 
     # start vpn service
-    if [ "$1" == "production" ]; then
-        systemctl start openfortivpn@cscc_prod.service
-        echo "prod vpn is $(get_vpn_status prod)"
-        # set dns of ppp0
+    systemctl start "openfortivpn@cscc_$1.service"
+    if [ "$1" == "$PRODUCTION_MODE" ]; then
+        info "$PRODUCTION_MODE vpn is $(get_vpn_status $PRODUCTION_MODE)"
         resolvectl dns ppp0 10.1.1.1 10.1.1.2
-        resolvectl domain ppp0 cs.nctu.edu.tw test.cs.nctu.edu.tw 
     else
-        systemctl start openfortivpn@cscc_test.service
-        echo "test vpn is $(get_vpn_status test)"
+        info "test vpn is $(get_vpn_status $TEST_MODE)"
         resolvectl dns ppp0 10.2.1.1 10.2.1.2 
-        resolvectl domain ppp0 cs.nctu.edu.tw test.cs.nctu.edu.tw 
     fi
+    resolvectl domain ppp0 'cs.nctu.edu.tw' 'test.cs.nctu.edu.tw' \
+        'cc.cs.nctu.edu.tw' 'test.cc.cs.nctu.edu.tw' 
 }
 
 toggle_vpn(){
     # check vpn service is running, if not ask to start it
-    if get_vpn_status -s test || get_vpn_status -s prod; then
+    if get_vpn_status -s "$TEST_MODE" || get_vpn_status -s "$PRODUCTION_MODE"; then
         stop_all_vpn
     else
         start_vpn "$1"
@@ -104,12 +177,11 @@ toggle_vpn(){
 }
 
 case "$1" in
-    -t|--toggle_vpn)
-        toggle_vpn "test"
+    -t|--test)
+        start_vpn "test"
       ;;
     -p|--production)
-        stop_all_vpn || true
-        start_vpn "production"
+        start_vpn "$PRODUCTION_MODE"
       ;;
     -s|--status)
         status | boxes -p "h2v1"
@@ -122,7 +194,7 @@ case "$1" in
       # if no arguments are given, print status, else prompt help
       if [ $# -eq 0 ]; then
           status
-          toggle_vpn "test"
+          toggle_vpn "$TEST_MODE"
       else
         prompt_help
         exit 1
