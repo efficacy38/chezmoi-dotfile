@@ -61,3 +61,10 @@
   url: "https://github.com/MordechaiHadad/bob/releases/download/v{{ $bobRevision }}/bob-linux-x86_64-openssl.zip"
   path: bob-linux-x86_64-openssl/bob
   executable: true
+
+".local/bin/lazygit":
+  type: archive-file
+  {{ $lazygitRevision := includeTemplate "get-github-latest-version" (list "jesseduffield/lazygit" $cache) }}
+  url: "https://github.com/jesseduffield/lazygit/releases/download/v{{ $lazygitRevision }}/lazygit_{{ $lazygitRevision }}_Linux_x86_64.tar.gz "
+  path: lazygit
+  executable: true

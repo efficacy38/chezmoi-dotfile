@@ -33,6 +33,8 @@ else
   fi
 fi
 
-# install nvim user config
-ln -s ~/.config/nvim-user ~/.config/nvim/lua/user
-
+# install nvim user config if link not exists
+if [[ ! -L ~/.config/nvim/lua/user ]]; then
+  log_task "Linking nvim user config"
+  ln -s ~/.config/nvim-user ~/.config/nvim/lua/user
+fi
