@@ -1,6 +1,6 @@
 #!/bin/bash
 # $1 is 1 is enable adguardhome, 0 is disable adguardhome
-# set -x
+set -x
 
 usage(){
 	echo "usage: $0 [1|0|-s]"
@@ -33,7 +33,7 @@ export -f get
 
 server_list(){
 	for i in $(seq 1 2); do
-		echo "adguardhome.n$i.jpc1.oci.efficacy38.me"
+		echo "adguardhome.n$i.jpc1.oci.csjhuang.net"
 	done
 }
 

@@ -1,3 +1,9 @@
+# start tmux when start a new terminal
+# if [[ -z "$TMUX" ]] && [[ "$TERM" != "screen" ]] && [[ "$TERM" != "tmux" ]]; then
+#     tmux attach -t default 2>/dev/null || tmux new -s default
+# fi
+
+# ---------------------- default settings ------------------------------------
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -114,8 +120,15 @@ export LANG=en_US.UTF-8
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # ------------------------- develop toolchain settings -----------------------
-# nvm
+# bash completion compatibility for zsh
+autoload -U +X bashcompinit && bashcompinit
+autoload -U +X compinit && compinit
 
+# load incus auto completion
+source /usr/share/bash-completion/bash_completion 2>/dev/null
+source /usr/share/bash-completion/completions/incus
+
+# nvm
 # preload nvm on shell start
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
@@ -144,18 +157,29 @@ fi
 # function to create a new tmux session with the name of the current directory
 function tat {
     name=$(basename $(pwd) | sed -e 's/\.//g')
+    if [ $(pwd) = $HOME ]; then
+        name="default"
+    fi
 
-  if tmux ls 2>&1 | grep -E "^$name:"; then
-    tmux attach -t "$name"
-  elif [ -f .envrc ]; then
-    direnv exec / tmux new-session -s "$name"
-  else
-    tmux new-session -s "$name"
-  fi
+
+    if ! tmux ls 2>&1 | grep -E "^$name:"; then
+        if [ -f .envrc ]; then
+            direnv exec / tmux new-session -s "$name" -d
+        else
+            # start tmux at detached mode
+            tmux new-session -s "$name" -d
+        fi
+    fi
+
+    if [ -z "$TMUX" ]; then
+        tmux attach -t "$name" -c "$(pwd)"
+    else
+        tmux switch-client -t "$name"
+    fi
 }
 
 # attach to lxd container with username 
-function golxc(){
+function goincus(){
     if [[ $# -eq 0 ]]; then
         echo "Usage: $0 <container or vm name> [namespace] [username]" >&2
         echo ""
@@ -166,7 +190,7 @@ function golxc(){
     fi
     instance="$1"; shift;
     project="";
-    uid="";
+    uid="efficacy38";
 
     if [[ $# -gt 0 ]]; then
         project=$1; shift;
@@ -178,10 +202,10 @@ function golxc(){
 
     if [[ -z "$project" ]]; then
         echo "\nenter the $instance at current project\n"
-        lxc exec $instance -- sudo -iu "$uid"
+        incus exec $instance -- sudo -iu "$uid"
     else
         echo "\nenter the $instance at project $project\n"
-        lxc exec --project $project $instance -- sudo -iu "$uid"
+        incus exec --project $project $instance -- sudo -iu "$uid"
     fi
 }
 
@@ -203,10 +227,10 @@ function add-lxd-home() {
     read "add_disk?add directory would restart the container/VM, proceed? [Y/n]"
     [[ "$add_disk" =~ '^[Yy]$|^$' ]] || break
 	grep -qE "^[Yy]$|^$" <<< "$add_disk" || break
-    lxc stop $1
-    lxc config device add $1 homeDir disk source=/home// path=/$HOME/
-    lxc config set $1 raw.idmap "both 1000 1000"
-    lxc start $1
+    incus stop $1
+    incus config device add $1 homeDir disk source=/home// path=/$HOME/
+    incus config set $1 raw.idmap "both 1000 1000"
+    incus start $1
 }
 
 # create a new dev container
@@ -273,14 +297,14 @@ export PATH="/home/.cargo/bin:${KREW_ROOT:-$HOME/.krew}/bin:/$HOME/.local/share/
 # short cut alias
 aliasIfExist cat bat
 aliasIfExist cat batcat
-aliasIfExist godev 'lxc exec --project default dev -- sudo -iu '
+aliasIfExist godev 'incus exec --project default dev -- sudo -iu '
 aliasIfExist bye 'sudo poweroff'
 aliasIfExist k kubectl
 aliasIfExist reboot 'sudo reboot'
-alias cscc_work='sudo $HOME/.local/bin/cscc_work'
+# alias cscc_work='sudo $HOME/.local/bin/cscc_work'
 aliasIfExist 'cdt' 'cd ~/Tmp'
-alias chproj='lxc project switch'
-aliasIfExist ssh "kitty +kitten ssh"
+alias chproj='incus project switch'
+# aliasIfExist ssh "kitty +kitten ssh"
 
 if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
     aliasIfExist 'copy' 'wl-copy'
@@ -293,4 +317,8 @@ aliasIfExist vim nvim
 aliasIfExist vi vim
 aliasIfExist docker-compose podman-compose
 aliasIfExist docker podman
+alias kreload='kquitapp5 plasmashell; plasmashell --replace &'
+
+# source /etc/profile.d/flatpak.sh
+source "$HOME/.cargo/env"
 

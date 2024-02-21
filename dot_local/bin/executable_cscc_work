@@ -15,17 +15,36 @@ DEBUG=4
 LOG_LEVEL=${LOG_LEVEL:-$INFO}
 CONFDIR="~/.config/cscc/"
 CONF="$CONFDIR/config.json"
+# VPN timeout interval and timeout
 TIMEINTERVAL=0.1 # 100ms
-TIMEOUT=100      # 10s
+TIMEOUT=150      # 15s
 
-# prompt help
-prompt_help(){
-    echo "Usage: cscc_work [OPTION]"
-    echo "Toggle VPN connection for CSCC work"
-    echo "  -t, --toggle_vpn    toggle VPN connection"
-    echo "  -p, --production    toggle VPN connection for production"
-    echo "  -s, --status        print VPN status"
-    echo "  -h, --help          print this help"
+# helper functions
+fortivpn_invoke(){
+    local operation="$1"
+    local vpn_type="$2"
+
+    if [ $operation != "start" ] && [ $operation != "stop" ]; then
+        error "Invalid operation: $operation, exiting..." && exit 1
+    fi
+
+    if [ "$operation" == "stop" ]; then
+        # clear dns setting for systemd-resolved bug(don't clear resolv.conf 
+        # setting)
+        sudo resolvectl revert ppp0
+    fi
+
+    if sudo systemctl "$operation" "openfortivpn@cscc_$vpn_type.service"; then
+        if [ "$operation" == "start" ]; then
+            for i in $(seq 10); do
+                get_vpn_status "$vpn_type" | grep -q 'healthy' && break
+                sleep 1
+            done
+        fi
+        debug "$vpn_type VPN is $(get_vpn_status "$vpn_type")"
+    else
+        error "$vpn_type VPN $operation failed, exiting..." && exit 1
+    fi
 }
 
 log(){
@@ -44,25 +63,39 @@ log(){
 }
 
 function error() {
-    log $ERROR "ERROR" "$*"
+    log "$ERROR" "ERROR" "$*"
 }
 
 function warn() {
-    log $WARN "WARN" "$*"
+    log "$WARN" "WARN" "$*"
 }
 
 function info() {
-    log $INFO "INFO" "$*"
+    log "$INFO" "INFO" "$*"
 }
 
 function debug() {
     local message=$1
-    log $DEBUG "DEBUG" "$message"
+    log "$DEBUG" "DEBUG" "$message"
 }
 
 if [[ $LOG_LEVEL -lt $ERROR ]]; then
     LOG_LEVEL=$INFO
 fi
+
+# script's function
+# prompt help
+prompt_help(){
+    echo "Usage: cscc_work [OPTION]..."
+    echo "Connect to cscc VPN"
+    echo ""
+    echo "  -h, --help          display this help and exit"
+    echo "  -s, --status        display current VPN status"
+    echo "  -t, --test          connect to test VPN"
+    echo "  -p, --production    connect to production VPN"
+    echo "  -d, --toggle        toggle between acvite and inactive VPN"
+    echo ""
+}
 
 get_vpn_status(){
     silent=0
@@ -82,7 +115,22 @@ get_vpn_status(){
     shift $((OPTIND-1))
 
     if systemctl is-active --quiet "openfortivpn@cscc_$1.service"; then
-        [ "$silent" -eq 0 ] && printf 'connected(%s)' "$(get_vpn_ip)"
+        if [ "$silent" -eq 0 ]; then
+            local status_string=""
+            local dns_server=""
+            [ "$1" = "$PRODUCTION_MODE" ] && \
+                dns_server="10.1.1.1" || dns_server="10.2.1.1"
+
+            connectivity_check "$1" > /dev/null && \
+                status_string="healthy" || status_string="unhealthy"
+
+            [ "$status_string" = "healthy" ] && dig @"$dns_server" \
+                +timeout=1 +retry=1 cs.nctu.edu.tw -t SOA > /dev/null && \
+                status_string="healthy" || status_string="degreded(dns failure)"
+
+            [ "$silent" -eq 0 ] && \
+                printf 'connected(%s, %s)' "$(get_vpn_ip)" "$status_string"
+        fi
         return 0
     else
         [ "$silent" -eq 0 ] && echo "disconnected"
@@ -96,8 +144,8 @@ get_vpn_ip_raw(){
 
 get_vpn_ip(){
     while [ "$TIMEOUT" -gt 0 ]; do
-        if [ -n "$(get_vpn_ip_raw)" ]; then
-            get_vpn_ip_raw
+        if [ "$(get_vpn_ip_raw 2>/dev/null)" != "" ]; then
+            get_vpn_ip_raw 2>/dev/null
             return 0
         fi
         sleep "$TIMEINTERVAL"
@@ -109,66 +157,82 @@ get_vpn_ip(){
 }
 
 status(){
-    # print status of vpn status
+    # print status of VPN status
     printf "%s VPN status: %s\n" "$TEST_MODE" "$(get_vpn_status "$TEST_MODE")"
-    printf "%s VPN status: %s\n" "$PRODUCTION_MODE" "$(get_vpn_status "$PRODUCTION_MODE")"
+    printf "%s VPN status: %s\n" "$PRODUCTION_MODE" \
+        "$(get_vpn_status "$PRODUCTION_MODE")"
 }
 
 stop_all_vpn(){
     vpn_string=""
     get_vpn_status -s "$TEST_MODE" && vpn_string="$TEST_MODE"
     get_vpn_status -s "$PRODUCTION_MODE" && vpn_string="$PRODUCTION_MODE"
-    # ask whether disconnect vpn
+    # ask whether disconnect VPN
     if [ -n "$vpn_string" ]; then
-        printf "\n%s VPN(%s) service is running, do you want to disconnect? (Y/n) " \
+        warn "$vpn_string VPN is running, check whether user want to stop it..."
+        printf "%s VPN(%s) service is running, do you want to disconnect? (Y/n) - " \
         "$vpn_string" "$(get_vpn_ip)"
         read -r answer
         if [ "$answer" != "${answer#[Nn]}" ]; then
-            info "VPN service not stopped, exiting..."
-            return 1
+           info "answer is \`$answer\` $vpn_string VPN service would not stopped, exiting..."
         fi
 
         # stop vpn service
-        systemctl stop "openfortivpn@cscc_$vpn_string.service"
-
-        # check current vpn status
-        info "$vpn_string vpn is $(systemctl is-active openfortivpn@cscc_$TEST_MODE.service)" 
+        info "stopping $vpn_string VPN..."
+        fortivpn_invoke stop "$vpn_string"
     fi
 }
 
 start_vpn(){
-    # $1 is the vpn type, test or prod
+    # $1 is the VPN type, test or prod
     vpn_string=""
-    get_vpn_status -s $TEST_MODE && vpn_string="$TEST_MODE"
-    get_vpn_status -s $PRODUCTION_MODE && vpn_string="$PRODUCTION_MODE"
+
+    info "check current used VPN type(if VPN is still running)..."
+    get_vpn_status -s "$TEST_MODE" && vpn_string="$TEST_MODE"
+    get_vpn_status -s "$PRODUCTION_MODE" && vpn_string="$PRODUCTION_MODE"
 
     if [ "$vpn_string" = "$1" ]; then
-        info "VPN($vpn_string) service is running, exiting..." && exit 0
+        info "$vpn_string VPN service is running, exiting..." && exit 0
     elif ! stop_all_vpn; then
-        error "VPN stop failed, exiting..." && exit 1
+        error "$vpn_string VPN stop failed, exiting..." && exit 1
     fi
 
-    printf "\n%s VPN service is not running, do you want to start it? (Y/n)" "$1"
+    [ "$vpn_string" != "" ] && warn "$vpn_string VPN is stopped, check whether wants' to start $1 VPN..."
+    printf "%s VPN service is not running, do you want to start it? (Y/n) - " "$1"
     read -r answer
     if [ "$answer" != "${answer#[Nn]}" ]; then
-        info "VPN service would not start, exiting..." && exit 0
+        info "answer is \`$answer\` VPN service would not not started, exiting..."
+        exit 0
+    else
+        info "answer is \`$answer\` VPN service would start"
     fi
 
-    # start vpn service
-    systemctl start "openfortivpn@cscc_$1.service"
+    # start VPN service
+    info "starting $1 vpn..."
+    fortivpn_invoke start "$1"
+
+    # setup dns naming service for VPN connection
     if [ "$1" == "$PRODUCTION_MODE" ]; then
-        info "$PRODUCTION_MODE vpn is $(get_vpn_status $PRODUCTION_MODE)"
-        resolvectl dns ppp0 10.1.1.1 10.1.1.2
+        sudo resolvectl dns ppp0 10.1.1.1 10.1.1.2
     else
-        info "test vpn is $(get_vpn_status $TEST_MODE)"
-        resolvectl dns ppp0 10.2.1.1 10.2.1.2 
+        sudo resolvectl dns ppp0 10.2.1.1 10.2.1.2 
     fi
-    resolvectl domain ppp0 'cs.nctu.edu.tw' 'test.cs.nctu.edu.tw' \
-        'cc.cs.nctu.edu.tw' 'test.cc.cs.nctu.edu.tw' 
+    info "set search domain([cc].cs.nctu.edu.tw) for $1 vpn"
+    # INFO: for security reason, only set the dns as routing-domain is good
+    # check https://systemd.io/RESOLVED-VPNS/ for more information
+    #
+    # sudo resolvectl domain ppp0 '~test.cc.cs.nctu.edu.tw' \
+    #     '~cc.cs.nctu.edu.tw' '~cs.nctu.edu.tw' '~test.cs.nctu.edu.tw'
+    #
+    # INFO: but I set it as search domain just for convenience
+    sudo resolvectl domain ppp0 'test.cc.cs.nctu.edu.tw' 'cc.cs.nctu.edu.tw'
+    sudo resolvectl default-route ppp0 false
+
+    info "activate $1 VPN connection done"
 }
 
 toggle_vpn(){
-    # check vpn service is running, if not ask to start it
+    # check VPN service is running, if not ask to start it
     if get_vpn_status -s "$TEST_MODE" || get_vpn_status -s "$PRODUCTION_MODE"; then
         stop_all_vpn
     else
@@ -176,24 +240,59 @@ toggle_vpn(){
     fi
 }
 
+connectivity_check(){
+    local vpn_type="$1"
+    local ping_dst_ip=""; [ $vpn_type == $TEST_MODE ] \
+        && ping_dst_ip="10.2.1.1" || ping_dst_ip="10.1.1.1"
+
+    info "check $vpn_type VPN health..."
+    if ! ping -c 1 -W 1 "$ping_dst_ip" &>/dev/null; then
+        error "$vpn_type VPN is not healthy, exiting..." && return 1
+    fi
+    info "$vpn_type VPN is healthy"
+}
+
+healthy_check(){
+    # check VPN systemd unit is exist
+    for type in $TEST_MODE $PRODUCTION_MODE; do
+        if ! systemctl list-units --full --all | grep -q "openfortivpn@cscc_$type.service"; then
+            error "$type VPN systemd unit is not exist, exiting..." && exit 1
+        fi
+    done
+
+    # TODO: check VPN password is exist
+}
+
 case "$1" in
     -t|--test)
+        info "start test vpn..."
         start_vpn "test"
       ;;
     -p|--production)
+        info "start production vpn..."
         start_vpn "$PRODUCTION_MODE"
       ;;
     -s|--status)
+        info "print VPN status..."
         status | boxes -p "h2v1"
         echo 
       ;;
     -h|--help)
         prompt_help
       ;;
+
+    -d|--toggle)
+        info "toggle VPN..."
+        toggle_vpn "$TEST_MODE"
+      ;;
+
     *)
       # if no arguments are given, print status, else prompt help
       if [ $# -eq 0 ]; then
-          status
+          info "no arguments given, fallback to toggle VPN..."
+          info "print VPN status..."
+          status | boxes -p "h2v1"
+          echo 
           toggle_vpn "$TEST_MODE"
       else
         prompt_help

@@ -11,9 +11,8 @@ return {
   -- },
   -- themes
   { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
-  { "folke/tokyonight.nvim"},
-  { "morhetz/gruvbox"},
-
+  { "folke/tokyonight.nvim" },
+  { "morhetz/gruvbox" },
 
   {
     "folke/todo-comments.nvim",
@@ -61,19 +60,22 @@ return {
     "leoluz/nvim-dap-go",
     event = "User LazyDone",
     ft = "go",
-    config = function(_, opts)
-      require("dap-go").setup(opts)
-    end,
+    config = function(_, opts) require("dap-go").setup(opts) end,
   },
   {
     "olexsmir/gopher.nvim",
     event = "User LazyDone",
     ft = "go",
-    config = function(_, opts)
-      require("gopher").setup(opts)
-    end,
-    build = function()
-      vim.cmd [[silent! GoUpdateBinaries]]
-    end,
+    config = function(_, opts) require("gopher").setup(opts) end,
+    build = function() vim.cmd [[silent! GoUpdateBinaries]] end,
+  },
+  {
+    "activitywatch/aw-watcher-vim",
+    event = "User LazyDone",
+  },
+  {
+    "mrcjkb/rustaceanvim",
+    version = "^4", -- Recommended
+    ft = { "rust" },
   },
 }

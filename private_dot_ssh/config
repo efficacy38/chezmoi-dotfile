@@ -1,4 +1,4 @@
-Include ~/.ssh/config.d/*.conf
+# Include ~/.ssh/config.d/*.conf
 
 Match all
 	AddKeysToAgent yes

@@ -13,7 +13,7 @@
 [credential "https://git.cs.nctu.edu.tw"]
 	helper = !glab auth git-credential
 [commit]
-    gpgsign = true
+    # gpgsign = true
 [safe]
 	directory = /usr/local/src/wallpaper-engine-kde-plugin
 	directory = /home/efficacy38/Tmp/sshfs

@@ -128,3 +128,4 @@ eval "$(pyenv init -)"
 complete -C /usr/bin/terraform terraform
 
 [[ -s "/home/efficacy38/.gvm/scripts/gvm" ]] && source "/home/efficacy38/.gvm/scripts/gvm"
+. "$HOME/.cargo/env"
