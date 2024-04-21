@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- if .install_dep }}
+if ! command -v ansible &> /dev/null; then
+	echo "Ansible is not installed"
+	sudo apt-get update
+	sudo apt-get install -y ansible
+fi
+
+sudo mkdir -p /root/.ansible/plugins/modules
+sudo wget --output-document="/root/.ansible/plugins/modules/deb822_repository.py" https://raw.githubusercontent.com/ansible/ansible/stable-2.15/lib/ansible/modules/deb822_repository.py
+sudo ansible-playbook ~/.local/share/chezmoi/bootstrap-playbook/main.yml
+{{ end }}
+

@@ -1,0 +1,4 @@
+# make sid repo's preference lower
+Package: *
+Pin: release n=sid
+Pin-Priority: -1

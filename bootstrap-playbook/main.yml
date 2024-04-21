@@ -1,0 +1,160 @@
+---
+- name: Setup bootstrap config
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: add kopia repo
+      become: true
+      deb822_repository:
+        name: kopia
+        types: deb
+        uris: http://packages.kopia.io/apt
+        suites: "stable"
+        components:
+          - main
+        signed_by: https://kopia.io/signing-key
+
+    - name: add tailscale repo
+      become: true
+      deb822_repository:
+        name: tailscale
+        types: deb
+        uris: https://pkgs.tailscale.com/stable/ubuntu
+        suites: "focal"
+        components:
+          - main
+        signed_by: https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg
+
+    - name: add mattermost repo
+      become: true
+      deb822_repository:
+        name: mattermost
+        types: deb
+        uris: https://deb.packages.mattermost.com
+        suites: "stable"
+        components:
+          - main
+        signed_by: https://deb.packages.mattermost.com/pubkey.gpg
+
+    - name: add vscode repo
+      become: true
+      deb822_repository:
+        name: vscode
+        types: deb
+        uris: https://packages.microsoft.com/repos/vscode
+        suites: "stable"
+        components:
+          - main
+        signed_by: https://packages.microsoft.com/keys/microsoft.asc
+
+    - name: add hashicorp repo(terraform)
+      become: true
+      deb822_repository:
+        name: hashicorp
+        types: deb
+        uris: https://apt.releases.hashicorp.com
+        suites: "{{ ansible_distribution_release }}"
+        components:
+          - main
+        signed_by: https://apt.releases.hashicorp.com/gpg
+        
+    - name: Add ppa
+      ansible.builtin.apt_repository:
+        repo: "{{ item }}"
+      loop:
+        - ppa:phoerious/keepassxc
+        - ppa:nextcloud-devs/client
+        - ppa:obsproject/obs-studio
+
+    - name: add incus repo
+      become: true
+      deb822_repository:
+        name: incus
+        types: deb
+        uris: https://pkgs.zabbly.com/incus/stable
+        suites: "{{ ansible_distribution_release }}"
+        components:
+          - main
+        signed_by: https://pkgs.zabbly.com/key.asc
+
+    - name: add mozilla repo
+      become: true
+      deb822_repository:
+        name: mozilla
+        types: deb
+        uris: https://packages.mozilla.org/apt
+        suites: "mozilla"
+        components:
+          - main
+        signed_by: https://packages.mozilla.org/apt/repo-signing-key.gpg
+
+    # - name: pin debian sid repo
+    #   become: true
+    #   ansible.builtin.copy:
+    #     src: sid.pref
+    #     dest: /etc/apt/preferences.d/
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+
+    - name: pin firefox to use repo
+      ansible.builtin.copy:
+        src: mozilla.pref
+        dest: /etc/apt/preferences.d/
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: install packages(common)
+      become: true
+      ansible.builtin.apt:
+        update_cache: yes
+        pkg:
+          # base utils
+          - zsh
+          - curl
+          - wget
+          - git
+          - tmux
+          - direnv
+          - ripgrep
+          - boxes
+          # system utils
+          - resolvconf
+          - tailscale
+          - openfortivpn
+          - htop
+          # dev utils
+          - terraform
+          - build-essential
+          - cmake
+          - python-is-python3
+          - python3-poetry
+          # desktop tuils
+          - wl-clipboard
+          - kopia
+          - kopia-ui
+          - mattermost-desktop
+          - obs-studio 
+          - code
+          - remmina
+          - keepassxc 
+          - nextcloud-client
+          - dolphin-nextcloud 
+          - thunderbird
+          - firefox
+          - incus-client
+
+    - name: Install snap
+      community.general.snap:
+        name:
+          - ferdium
+          - glab
+          - kustomize
+          - yq 
+
+    - name: Install snap
+      community.general.snap:
+        name:
+          - helm
+        classic: true
