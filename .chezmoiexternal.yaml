@@ -1,70 +1,64 @@
 {{- /* "chezmoi" is present as work around for https://github.com/twpayne/chezmoi/discussions/1724 */ -}}
 {{- $cache := dict "chezmoi" .chezmoi -}}
-
 {{- template "read-versions-and-revisions-cache" $cache -}}
 
 ".oh-my-zsh":
   type: archive
-  {{ $omzRevision := includeTemplate "get-github-head-revision" (list "ohmyzsh/ohmyzsh" $cache) }}
-  url: "https://github.com/ohmyzsh/ohmyzsh/archive/{{ $omzRevision }}.tar.gz"
+  url: "https://github.com/ohmyzsh/ohmyzsh/archive/master.tar.gz"
   stripComponents: 1
   # waiting for https://github.com/twpayne/chezmoi/issues/1614#issuecomment-966524408
   # exact: true
 
 ".oh-my-zsh/custom/themes/powerlevel10k":
   type: archive
-  {{ $p10kRevision := includeTemplate "get-github-head-revision" (list "romkatv/powerlevel10k" $cache) }}
-  url: "https://github.com/romkatv/powerlevel10k/archive/{{ $p10kRevision }}.tar.gz"
+  url: "https://github.com/romkatv/powerlevel10k/archive/master.tar.gz"
   stripComponents: 1
   exact: true
 
 ".oh-my-zsh/custom/plugins/zsh-syntax-highlighting":
   type: archive
-  {{ $zshSyntaxHighlightingRevision := includeTemplate "get-github-head-revision" (list "zsh-users/zsh-syntax-highlighting" $cache) }}
-  url: "https://github.com/zsh-users/zsh-syntax-highlighting/archive/{{ $zshSyntaxHighlightingRevision }}.tar.gz"
+  url: "https://github.com/zsh-users/zsh-syntax-highlighting/archive/master.tar.gz"
   stripComponents: 1
   exact: true
 
 ".oh-my-zsh/custom/plugins/zsh-autosuggestions":
   type: archive
-  {{ $zshAutoSuggestionsRevision := includeTemplate "get-github-head-revision" (list "zsh-users/zsh-autosuggestions" $cache) }}
-  url: "https://github.com/zsh-users/zsh-autosuggestions/archive/{{ $zshAutoSuggestionsRevision }}.tar.gz"
+  url: "https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz"
   stripComponents: 1
   exact: true
 
 ".oh-my-zsh/custom/plugins/zsh-completions":
   type: archive
-  {{ $zshCompletionsRevision := includeTemplate "get-github-head-revision" (list "zsh-users/zsh-completions" $cache) }}
-  url: "https://github.com/zsh-users/zsh-completions/archive/{{ $zshCompletionsRevision }}.tar.gz"
+  url: "https://github.com/zsh-users/zsh-completions/archive/master.tar.gz"
   stripComponents: 1
   exact: true
 
 ".tmux/plugins/tpm":
   type: archive
-  {{ $tpmRevision := includeTemplate "get-github-head-revision" (list "tmux-plugins/tpm" $cache) }}
-  url: "https://github.com/tmux-plugins/tpm/archive/{{ $tpmRevision }}.tar.gz"
+  url: "https://github.com/tmux-plugins/tpm/archive/master.tar.gz"
   stripComponents: 1
   exact: true
 
 # nvim
 ".config/nvim":
   type: archive
-  {{ $nvimRevision := includeTemplate "get-github-head-revision" (list "AstroNvim/AstroNvim" $cache) }}
-  url: "https://github.com/AstroNvim/AstroNvim/archive/{{ $nvimRevision }}.tar.gz"
+  url: "https://github.com/AstroNvim/AstroNvim/archive/v3.45.3.tar.gz"
   stripComponents: 1
   exact: true
+  exclude:
+    - "user"
 
 # local binary tools
 ".local/bin/bob":
   type: archive-file
-  {{ $bobRevision := includeTemplate "get-github-latest-version" (list "MordechaiHadad/bob" $cache) }}
+  {{ $bobRevision := includeTemplate "get-github-latest-version" (list "MordechaiHadad/bob" $cache) -}}
   url: "https://github.com/MordechaiHadad/bob/releases/download/v{{ $bobRevision }}/bob-linux-x86_64-openssl.zip"
   path: bob-linux-x86_64-openssl/bob
   executable: true
 
 ".local/bin/lazygit":
   type: archive-file
-  {{ $lazygitRevision := includeTemplate "get-github-latest-version" (list "jesseduffield/lazygit" $cache) }}
-  url: "https://github.com/jesseduffield/lazygit/releases/download/v{{ $lazygitRevision }}/lazygit_{{ $lazygitRevision }}_Linux_x86_64.tar.gz "
+  {{ $lazygitRevision := includeTemplate "get-github-latest-version" (list "jesseduffield/lazygit" $cache) -}}
+  url: "https://github.com/jesseduffield/lazygit/releases/download/v{{ $lazygitRevision }}/lazygit_{{ $lazygitRevision }}_Linux_x86_64.tar.gz"
   path: lazygit
   executable: true

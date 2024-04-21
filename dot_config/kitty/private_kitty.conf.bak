@@ -1,5 +1,6 @@
 # vim:fileencoding=utf-8:ft=conf
 
+# fc settings
 font_family      Hack
 italic_font      auto
 bold_font        auto
@@ -7,4 +8,31 @@ bold_italic_font auto
 
 # Font size (in pts)
 font_size        16.0
+
+# set width and height
+remember_window_size  no
+initial_window_width  120c
+initial_window_height 30c
+
+# tab map alt+1..9 to switch tabs
+map alt+1 goto_tab 1
+map alt+2 goto_tab 2
+map alt+3 goto_tab 3
+map alt+4 goto_tab 4
+map alt+5 goto_tab 5
+map alt+6 goto_tab 6
+map alt+7 goto_tab 7
+map alt+8 goto_tab 8
+map alt+9 goto_tab 9
+
+# cool kitty feature
+map ctrl+shift+u kitten unicode_input
+
+# tab name style
+tab_title_template "{index}: {title[title.rfind(':')+1:]}"
+
+# BEGIN_KITTY_THEME
+# Gruvbox Dark Soft
+include current-theme.conf
+# END_KITTY_THEME
 

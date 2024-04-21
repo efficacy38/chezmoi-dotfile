@@ -12,6 +12,8 @@
 	helper = !glab auth git-credential
 [credential "https://git.cs.nctu.edu.tw"]
 	helper = !glab auth git-credential
+[credential "https://gitlab.it.cs.nycu.edu.tw"]
+	helper = !glab auth git-credential
 [commit]
     # gpgsign = true
 [safe]
