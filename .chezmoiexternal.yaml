@@ -13,7 +13,6 @@
   type: archive
   url: "https://github.com/romkatv/powerlevel10k/archive/master.tar.gz"
   stripComponents: 1
-  exact: true
 
 ".oh-my-zsh/custom/plugins/zsh-syntax-highlighting":
   type: archive
