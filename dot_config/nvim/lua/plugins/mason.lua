@@ -33,6 +33,8 @@ return {
         "delve",
         "templ",
         "cmakelang",
+        "bash-language-server",
+        "shellcheck",
         -- NOTE: web language linters
         "markdownlint",
         "markuplint",
