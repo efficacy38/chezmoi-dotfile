@@ -2,13 +2,13 @@
 {{- $choices := list "desktop" "server" -}}
 {{- $hosttype := promptChoiceOnce . "hosttype" "What type of host are you on" $choices -}}
 {{- $installDepDefault := false -}}
-{{ if $hosttype = "desktop" }} {{- $installDepDefault = true -}} {{ end }}
+{{ if eq $hosttype "desktop" }} {{- $installDepDefault = true -}} {{ end }}
 {{- $install_dep := promptBoolOnce . "install_dep" "Should we install deps when init" $installDepDefault }}
 
 # those config would pop when called init, this is for templating data
 data:
   hosttype: "{{ $hosttype }}"
-  install_dep: "{{ $install_dep }}"
+  install_dep: {{ $install_dep }}
 
 git:
   autoCommit: true

@@ -16,7 +16,7 @@ fi
 # Alpine frequently does not come with script (from util-linux) installed
 if command -v script >/dev/null && [[ ! -d "${HOME}/.cache/gitstatus" ]]; then
   log_task "Initializing ZSH"
-  bash -e <<'EOF' >/dev/null
+  bash -e <<'EOF' >/dev/null || true
 # We need to be in a git repository, so gitstatusd initialiazes
 cd '{{ .chezmoi.workingTree }}'
 

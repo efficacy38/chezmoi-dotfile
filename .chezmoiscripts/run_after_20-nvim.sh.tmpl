@@ -8,12 +8,12 @@ true || source ../.chezmoitemplates/scripts-library
 ensure_path_entry "$HOME/.local/bin" "$HOME/.local/share/bob/nvim-bin"
 
 NVIM_VERSION=0.9.4
-if ! command -v bob >/dev/null; then
+if ! command -v bob 2>/dev/null; then
   log_error "bob is not installed"
 else
   # install nvim with bob
   need_install=false
-  if ! command -v nvim >/dev/null; then
+  if ! command -v nvim 2>/dev/null; then
     need_install=true
   fi
   # check nvim version is correct

@@ -1,19 +1,27 @@
-#!/bin/bash
-set -eux
+#!/bin/sh
 
-CHEZMOI_RELEASE_URL="https://github.com/twpayne/chezmoi/releases"
-# get file in tmp
-latest_url=$(curl -fsSL -o /dev/null -w "%{url_effective}" \
-"$CHEZMOI_RELEASE_URL/latest")
-latest_version=${latest_url##*/v}
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
 
-curl -sfSL "$CHEZMOI_RELEASE_URL/download/v$latest_version/chezmoi-linux-amd64" \
-	-o /tmp/chezmoi
-chmod +x /tmp/chezmoi
-mv /tmp/chezmoi "$HOME/.local/bin/chezmoi"
+if ! chezmoi="$(command -v chezmoi)"; then
+	bin_dir="${HOME}/.local/bin"
+	chezmoi="${bin_dir}/chezmoi"
+	echo "Installing chezmoi to '${chezmoi}'" >&2
+	if command -v curl >/dev/null; then
+		chezmoi_install_script="$(curl -fsSL get.chezmoi.io)"
+	elif command -v wget >/dev/null; then
+		chezmoi_install_script="$(wget -qO- get.chezmoi.io)"
+	else
+		echo "To install chezmoi, you must have curl or wget installed." >&2
+		exit 1
+	fi
+	sh -c "${chezmoi_install_script}" -- -b "${bin_dir}"
+	unset chezmoi_install_script bin_dir
+fi
 
-export PATH="$PATH:/usr/local/bin/chezmoi"
+set -- init --apply https://github.com/efficacy38/chezmoi-dotfile.git --
 
-chezmoi init https://github.com/efficacy38/chezmoi-dotfile.git
-chezmoi update
-
+echo "Running 'chezmoi $*'" >&2
+# exec: replace current process with chezmoi
+exec "$chezmoi" "$@"
