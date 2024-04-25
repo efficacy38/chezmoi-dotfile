@@ -39,15 +39,6 @@
   stripComponents: 1
   exact: true
 
-# nvim
-".config/nvim":
-  type: archive
-  url: "https://github.com/AstroNvim/AstroNvim/archive/v3.45.3.tar.gz"
-  stripComponents: 1
-  exact: true
-  exclude:
-    - "user"
-
 # local binary tools
 ".local/bin/bob":
   type: archive-file
