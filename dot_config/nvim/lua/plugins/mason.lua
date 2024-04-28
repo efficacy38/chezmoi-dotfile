@@ -40,8 +40,7 @@ return {
         "markuplint",
         -- NOTE: infra language linter
         "yaml-language-server",
-        "yamlfmt",
-        "yaml-lint",
+        "yamllint",
         "tflint",
         "jsonnet-language-server",
         "terraformls",

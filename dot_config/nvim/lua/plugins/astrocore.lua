@@ -30,6 +30,8 @@ return {
         spell = false, -- sets vim.opt.spell
         signcolumn = "auto", -- sets vim.opt.signcolumn to auto
         wrap = false, -- sets vim.opt.wrap
+        colorcolumn = "80",
+        expandtab = true,
       },
       g = { -- vim.g.<key>
         -- configure global vim variables (vim.g)
@@ -61,7 +63,7 @@ return {
         -- this is useful for naming menus
         ["<Leader>b"] = { desc = "Buffers" },
         -- quick save
-        ["<C-s>"] = { ":w!<cr>", desc = "Save File" },  -- change description but the same command
+        ["<C-s>"] = { ":w!<cr>", desc = "Save File" }, -- change description but the same command
         ["<leader>U"] = { ":UndotreeToggle<CR>" },
       },
       t = {
