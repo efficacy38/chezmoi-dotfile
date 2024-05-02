@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# FIXME: refactor to use chezmoi data
+
+{{- if and .install_dep }}
+cd ~/.fzf && ./install
+{{ end }}
+

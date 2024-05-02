@@ -63,3 +63,12 @@
       - --filter=blob:none
       - --sparse
       - --depth=1
+
+".fzf":
+  type: "git-repo"
+  url: "https://github.com/junegunn/fzf.git"
+  refreshPeriod: "168h"
+    # do shollow copy(sparse checkout)
+  clone:
+    args:
+      - --depth=1
