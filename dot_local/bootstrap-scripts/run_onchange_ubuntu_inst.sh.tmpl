@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# bootstrap-playbook/main.yml hash: {{ include "./bootstrap-playbook/main.yml" | sha256sum }}
+# bootstrap-playbook/main.yml hash: {{ include (joinPath .chezmoi.sourceDir "./dot_local/bootstrap-playbook/main.yml") | sha256sum }}
 
 {{- if .install_dep }}
 if ! command -v ansible &> /dev/null; then
@@ -11,6 +11,6 @@ fi
 
 sudo mkdir -p /root/.ansible/plugins/modules
 sudo wget --output-document="/root/.ansible/plugins/modules/deb822_repository.py" https://raw.githubusercontent.com/ansible/ansible/stable-2.15/lib/ansible/modules/deb822_repository.py
-sudo ansible-playbook ~/.local/share/chezmoi/bootstrap-playbook/main.yml
+sudo ansible-playbook {{ joinPath .chezmoi.sourceDir "./dot_local/bootstrap-playbook/main.yml" }}
 {{ end }}
 
