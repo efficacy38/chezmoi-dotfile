@@ -47,6 +47,17 @@
           - main
         signed_by: https://packages.microsoft.com/keys/microsoft.asc
 
+    - name: add github repo
+      become: true
+      deb822_repository:
+        name: github
+        types: deb
+        uris: https://cli.github.com/packages
+        suites: "stable"
+        components:
+          - main
+        signed_by: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+
     - name: Add ppa
       ansible.builtin.apt_repository:
         repo: "{{ item }}"
@@ -119,6 +130,7 @@
           - cmake
           - python-is-python3
           - python3-poetry
+          - gh
           # desktop tuils
           - wl-clipboard
           - kopia
