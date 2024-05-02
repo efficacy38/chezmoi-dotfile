@@ -3,7 +3,7 @@
 # FIXME: refactor to use chezmoi data
 
 {{- if (and .install_dep (eq .hosttype "desktop")) }}
-cd ~/.local/nerd-fonts && git sparse-checkout add patched-fonts/Hack
-cd ~/.local/nerd-fonts && ./install.sh Hack
+cd ~/.local/share/nerd-fonts && git sparse-checkout add patched-fonts/Hack
+cd ~/.local/share/nerd-fonts && ./install.sh Hack
 {{ end }}
 

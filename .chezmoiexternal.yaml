@@ -53,7 +53,7 @@
   path: lazygit
   executable: true
 
-".local/nerd-fonts":
+".local/share/nerd-fonts":
   type: "git-repo"
   url: "https://github.com/ryanoasis/nerd-fonts.git"
   refreshPeriod: "168h"
