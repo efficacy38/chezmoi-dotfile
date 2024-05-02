@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# bootstrap-playbook/main.yml hash: {{ include "bootstrap-playbook/main.yml" | sha256sum }}
+# bootstrap-playbook/main.yml hash: {{ include "./bootstrap-playbook/main.yml" | sha256sum }}
 
 {{- if .install_dep }}
 if ! command -v ansible &> /dev/null; then
