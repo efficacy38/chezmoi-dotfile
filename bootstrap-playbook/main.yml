@@ -47,24 +47,13 @@
           - main
         signed_by: https://packages.microsoft.com/keys/microsoft.asc
 
-    - name: add hashicorp repo(terraform)
-      become: true
-      deb822_repository:
-        name: hashicorp
-        types: deb
-        uris: https://apt.releases.hashicorp.com
-        suites: "{{ ansible_distribution_release }}"
-        components:
-          - main
-        signed_by: https://apt.releases.hashicorp.com/gpg
-        
     - name: Add ppa
       ansible.builtin.apt_repository:
         repo: "{{ item }}"
       loop:
         - ppa:phoerious/keepassxc
         - ppa:nextcloud-devs/client
-        - ppa:obsproject/obs-studio
+        # - ppa:obsproject/obs-studio
 
     - name: add incus repo
       become: true
@@ -125,7 +114,7 @@
           - openfortivpn
           - htop
           # dev utils
-          - terraform
+          # - terraform
           - build-essential
           - cmake
           - python-is-python3
@@ -135,7 +124,7 @@
           - kopia
           - kopia-ui
           - mattermost-desktop
-          - obs-studio 
+            # - obs-studio 
           - code
           - remmina
           - keepassxc 
