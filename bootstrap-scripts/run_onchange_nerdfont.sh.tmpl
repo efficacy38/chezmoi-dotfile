@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# bootstrap-playbook/main.yml hash: {{ include "bootstrap-playbook/main.yml" | sha256sum }}
+# FIXME: refactor to use checzmoi data
+
+{{- if (and .install_dep (eq .hosttype "desktop")) }}
+cd ~/.local/nerd-fonts && git sparse-checkout add patched-fonts/Hack
+cd ~/.local/nerd-fonts && ./install.sh Hack
+{{ end }}
+

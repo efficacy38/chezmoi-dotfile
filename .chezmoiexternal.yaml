@@ -52,3 +52,14 @@
   url: "https://github.com/jesseduffield/lazygit/releases/download/v{{ $lazygitRevision }}/lazygit_{{ $lazygitRevision }}_Linux_x86_64.tar.gz"
   path: lazygit
   executable: true
+
+".local/nerd-fonts":
+  type: "git-repo"
+  url: "https://github.com/ryanoasis/nerd-fonts.git"
+  refreshPeriod: "168h"
+    # do shollow copy(sparse checkout)
+  clone:
+    args:
+      - --filter=blob:none
+      - --sparse
+      - --depth=1
