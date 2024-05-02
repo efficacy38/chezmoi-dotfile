@@ -119,11 +119,14 @@
           - direnv
           - ripgrep
           - boxes
+          - yakuake
+          - flatpak
           # system utils
           - resolvconf
           - tailscale
           - openfortivpn
           - htop
+          - tlp
           # dev utils
           # - terraform
           - build-essential
@@ -159,3 +162,20 @@
         name:
           - helm
         classic: true
+
+    - name: Add the official flatpak remote to the system installation
+      community.general.flatpak_remote:
+        name: flathub
+        state: present
+        flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+
+    - name: Install flatpak
+      community.general.flatpak:
+        name:
+          # tlpui
+          - com.github.d4nj1.tlpui
+          # flatseal
+          - com.github.tchx84.Flatseal
+          # thunderbird
+          - org.mozilla.Thunderbird
+        state: present
