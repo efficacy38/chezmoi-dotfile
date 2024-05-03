@@ -121,6 +121,8 @@
           - boxes
           - yakuake
           - flatpak
+          - man-db
+
           # system utils
           - resolvconf
           - tailscale
@@ -128,29 +130,52 @@
           - htop
           - tlp
           - systemd-zram-generator
-          # dev utils
-          # - terraform
-          - build-essential
-          - cmake
           - python-is-python3
-          - python3-poetry
+          - rsync
+          - ssh
+          - aptitude
+
+          # dev utils
+          - build-essential
+          - make
+          - cmake
+          - tldr 
           - gh
+          - podman
+          - podman-compose
+
+          # python dev
+          - zlib1g-dev
+          - libbz2-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - llvm
+          - libncurses5-dev
+          - libncursesw5-dev
+          - xz-utils
+          - tk-dev
+          - liblzma-dev
+          - python3-openssl
+          - python3-poetry 
+
+          # ssl libs
+          - libssl-dev
+          - libffi-dev 
+          - openssl
+          - golang-cfssl
+
           # desktop tuils
           - wl-clipboard
           - kopia
           - kopia-ui
           - mattermost-desktop
-            # - obs-studio 
           - code
           - remmina
           - keepassxc 
           - nextcloud-client
           - dolphin-nextcloud 
-          - thunderbird
           - firefox
           - incus-client
-          - podman
-          - podman-compose
 
     - name: Install snap
       community.general.snap:
