@@ -127,6 +127,7 @@
           - openfortivpn
           - htop
           - tlp
+          - systemd-zram-generator
           # dev utils
           # - terraform
           - build-essential
@@ -148,19 +149,21 @@
           - thunderbird
           - firefox
           - incus-client
+          - podman
+          - podman-compose
 
     - name: Install snap
       community.general.snap:
         name:
-          - ferdium
           - glab
           - kustomize
           - yq 
 
-    - name: Install snap
+    - name: Install snap(classic)
       community.general.snap:
         name:
           - helm
+          - kubectl
         classic: true
 
     - name: Add the official flatpak remote to the system installation
@@ -178,4 +181,17 @@
           - com.github.tchx84.Flatseal
           # thunderbird
           - org.mozilla.Thunderbird
+          - org.telegram.desktop
+          - org.ferdium.Ferdium
         state: present
+
+    - name: Setup zram
+      ansible.builtin.copy:
+        src: zram-generator.conf
+        dest: /etc/systemd/zram-generator.conf
+
+    - name: Enable zram
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+        name: systemd-zram-setup@zram0.service
+        state: started
