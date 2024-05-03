@@ -208,6 +208,10 @@
           - org.mozilla.Thunderbird
           - org.telegram.desktop
           - org.ferdium.Ferdium
+          - org.zotero.Zotero
+          - io.qt.qdbusviewer
+          - io.github.hmlendea.geforcenow-electron
+          - com.usebottles.bottles
         state: present
 
     - name: Setup zram
