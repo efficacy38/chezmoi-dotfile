@@ -72,3 +72,8 @@
   clone:
     args:
       - --depth=1
+
+".local/share/pyenv":
+  type: "git-repo"
+  url: "https://github.com/pyenv/pyenv.git"
+  refreshPeriod: "168h"
