@@ -134,6 +134,7 @@
           - rsync
           - ssh
           - aptitude
+          - apt-file
 
           # dev utils
           - build-essential
@@ -143,6 +144,7 @@
           - gh
           - podman
           - podman-compose
+          - jsonnet
 
           # python dev
           - zlib1g-dev
