@@ -2,5 +2,5 @@
 
 Match all
 	AddKeysToAgent yes
-	VerifyHostKeyDNS yes
+	VerifyHostKeyDNS no
 	# StrictHostKeyChecking yes

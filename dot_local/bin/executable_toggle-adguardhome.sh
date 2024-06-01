@@ -1,6 +1,6 @@
 #!/bin/bash
 # $1 is 1 is enable adguardhome, 0 is disable adguardhome
-set -x
+# set -x
 
 usage(){
 	echo "usage: $0 [1|0|-s]"

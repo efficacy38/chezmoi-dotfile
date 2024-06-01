@@ -8,9 +8,9 @@
 	helper = !gh auth git-credential
 [credential "https://gist.github.com"]
 	helper = !gh auth git-credential
-[credential "https://gitlab.cs.nctu.edu.tw"]
+[credential "https://gitlab.cs.nycu.edu.tw"]
 	helper = !glab auth git-credential
-[credential "https://git.cs.nctu.edu.tw"]
+[credential "https://git.cs.nycu.edu.tw"]
 	helper = !glab auth git-credential
 [credential "https://gitlab.it.cs.nycu.edu.tw"]
 	helper = !glab auth git-credential

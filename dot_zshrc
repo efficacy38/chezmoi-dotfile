@@ -137,6 +137,7 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 
 # kubectl
 command -v kubectl > /dev/null && source <(kubectl completion zsh)
+command -v flux > /dev/null && source <(flux completion zsh)
 
 # pyenv
 export PYENV_ROOT="$HOME/.local/share/pyenv"
@@ -320,3 +321,6 @@ alias kreload='kquitapp5 plasmashell; plasmashell --replace &'
 # source /etc/profile.d/flatpak.sh
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
