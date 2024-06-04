@@ -1,0 +1,74 @@
+---
+- name: install packages(common, base)
+  become: true
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+      # base utils
+      - zsh
+      - curl
+      - wget
+      - git
+      - tmux
+      - direnv
+      - ripgrep
+      - boxes
+      - man-db
+      - incus-client
+
+      # system utils
+      - resolvconf
+      - python-is-python3
+      - rsync
+      - ssh
+      - aptitude
+      - apt-file
+
+      # dev utils
+      - build-essential
+      - make
+      - cmake
+      - tldr
+      - gh
+      - podman
+      - podman-compose
+      - jsonnet
+
+      # python dev
+      - zlib1g-dev
+      - libbz2-dev
+      - libreadline-dev
+      - libsqlite3-dev
+      - llvm
+      - libncurses5-dev
+      - libncursesw5-dev
+      - xz-utils
+      - tk-dev
+      - liblzma-dev
+      - python3-openssl
+      - python3-poetry
+
+      # ssl libs
+      - libssl-dev
+      - libffi-dev
+      - openssl
+      - golang-cfssl
+
+      # desktop tuils
+      - wl-clipboard
+      - code
+
+- name: Install snap
+  community.general.snap:
+    name:
+      - glab
+      - kustomize
+      - yq
+
+- name: Install snap(classic)
+  community.general.snap:
+    name:
+      - helm
+      - kubectl
+    classic: true
+

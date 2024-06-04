@@ -1,0 +1,8 @@
+---
+- name: Setup bootstrap config
+  hosts: localhost
+  connection: local
+  roles:
+    - apt-repos
+    - base-setup
+    - desktop-setup

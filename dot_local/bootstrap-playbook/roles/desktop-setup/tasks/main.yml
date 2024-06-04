@@ -1,0 +1,64 @@
+- name: install packages(common)
+  become: true
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+      # base utils
+      - yakuake
+      - flatpak
+
+      # system utils
+      - resolvconf
+      - tailscale
+      - openfortivpn
+      - tlp
+      - systemd-zram-generator
+      - python-is-python3
+
+      # desktop tuils
+      - wl-clipboard
+      - kopia
+      - kopia-ui
+      - mattermost-desktop
+      - code
+      - remmina
+      - keepassxc
+      - nextcloud-client
+      - dolphin-nextcloud
+      - firefox
+      - incus-client
+
+- name: Add the official flatpak remote to the system installation
+  community.general.flatpak_remote:
+    name: flathub
+    state: present
+    flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+
+- name: Install flatpak
+  community.general.flatpak:
+    name:
+      # tlpui
+      - com.github.d4nj1.tlpui
+      # flatseal
+      - com.github.tchx84.Flatseal
+      # thunderbird
+      - org.mozilla.Thunderbird
+      - org.telegram.desktop
+      - org.ferdium.Ferdium
+      - org.zotero.Zotero
+      - io.qt.qdbusviewer
+      - io.github.hmlendea.geforcenow-electron
+      - com.usebottles.bottles
+      - dev.deedles.Trayscale
+    state: present
+
+- name: Setup zram
+  ansible.builtin.copy:
+    src: zram-generator.conf
+    dest: /etc/systemd/zram-generator.conf
+
+- name: Enable zram
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: systemd-zram-setup@zram0.service
+    state: started
