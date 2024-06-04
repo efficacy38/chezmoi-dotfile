@@ -1,9 +1,19 @@
 # those config would only pop up for once, basically is init config
-{{- $choices := list "desktop" "server" -}}
-{{- $hosttype := promptChoiceOnce . "hosttype" "What type of host are you on" $choices -}}
-{{- $installDepDefault := false -}}
-{{ if eq $hosttype "desktop" }} {{- $installDepDefault = true -}} {{ end }}
-{{- $install_dep := promptBoolOnce . "install_dep" "Should we install deps when init" $installDepDefault }}
+{{ $hosttype := "" }}
+{{ $install_dep := false }}
+{{ if stdinIsATTY }}
+{{    $choices = list "desktop" "server" -}}
+{{    $hosttype = promptChoiceOnce . "hosttype" "What type of host are you on" $choices -}}
+{{    $installDepDefault = false -}}
+{{    if eq $hosttype "desktop" }} 
+{{        $installDepDefault = true -}}
+{{    end }}
+{{    $install_dep = promptBoolOnce . "install_dep" "Should we install deps when init" $installDepDefault }}
+{{    else }}
+{{    $hosttype = "desktop" -}}
+{{    $install_dep = true }}
+{{ end }}
+
 
 # those config would pop when called init, this is for templating data
 data:
