@@ -56,7 +56,6 @@
 
       # desktop tuils
       - wl-clipboard
-      - code
 
 - name: Install snap
   community.general.snap:
