@@ -59,6 +59,7 @@
 
 - name: Install snap
   community.general.snap:
+    become: true
     name:
       - glab
       - kustomize
@@ -66,6 +67,7 @@
 
 - name: Install snap(classic)
   community.general.snap:
+    become: true
     name:
       - helm
       - kubectl
