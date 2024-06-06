@@ -4,7 +4,7 @@
 # bootstrap-playbook/desktop.yml hash: {{ include (joinPath .chezmoi.sourceDir "./dot_local/bootstrap-playbook/desktop.yml") | sha256sum }}
 
 {{ if .install_dep }}
-if ! command -v ansible &> /dev/null; then
+if ! command -v ansible 2&> /dev/null; then
 	echo "Ansible is not installed"
 	sudo apt-get update
 	sudo apt-get install -y ansible
@@ -12,6 +12,6 @@ fi
 
 sudo mkdir -p /root/.ansible/plugins/modules
 sudo wget --output-document="/root/.ansible/plugins/modules/deb822_repository.py" https://raw.githubusercontent.com/ansible/ansible/stable-2.15/lib/ansible/modules/deb822_repository.py
-sudo ansible-playbook {{ joinPath .chezmoi.sourceDir "./dot_local/bootstrap-playbook/" .hosttype }}.yml
+sudo ansible-playbook {{ joinPath .chezmoi.sourceDir "./dot_local/bootstrap-playbook/" .hosttype }}.yml --user={{ .chezmoi.username }}
 {{ end }}
 
