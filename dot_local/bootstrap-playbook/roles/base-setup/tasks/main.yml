@@ -66,8 +66,8 @@
       - yq
 
 - name: Install snap(classic)
+  become: true
   community.general.snap:
-    become: true
     name:
       - helm
       - kubectl
