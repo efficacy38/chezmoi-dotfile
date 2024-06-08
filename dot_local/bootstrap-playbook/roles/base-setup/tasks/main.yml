@@ -58,8 +58,8 @@
       - wl-clipboard
 
 - name: Install snap
+  become: true
   community.general.snap:
-    become: true
     name:
       - glab
       - kustomize
