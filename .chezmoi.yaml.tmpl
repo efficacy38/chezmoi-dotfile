@@ -10,7 +10,7 @@
 {{    end }}
 {{    $install_dep = promptBoolOnce . "install_dep" "Should we install deps when init" $installDepDefault }}
 {{    else }}
-{{    $hosttype = "desktop" -}}
+{{    $hosttype = "server" -}}
 {{    $install_dep = true }}
 {{ end }}
 
